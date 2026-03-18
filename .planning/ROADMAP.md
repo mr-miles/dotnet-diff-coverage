@@ -111,7 +111,7 @@
 | Phase | Plans | Completed | Status |
 |-------|-------|-----------|--------|
 | 1: Foundation & CLI Scaffolding | 2 | 2 | Complete |
-| 2: Diff Parsing | 2 | 0 | Pending |
+| 2: Diff Parsing | 2 | 2 | Complete |
 | 3: Coverage Parsing | 2 | 0 | Pending |
 | 4: Cross-Reference Engine | 2 | 0 | Pending |
 | 5: Output & Reporting | 3 | 0 | Pending |
