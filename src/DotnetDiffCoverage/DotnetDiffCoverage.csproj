@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- NuGet tool packaging -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-diff-coverage</ToolCommandName>
+    <PackageId>dotnet-diff-coverage</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Cross-references a code diff with .NET coverage files to surface uncovered lines introduced by a PR.</Description>
+    <Authors>Your Name</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <!-- Output -->
+    <OutputType>Exe</OutputType>
+    <AssemblyName>dotnet-diff-coverage</AssemblyName>
+    <RootNamespace>DotnetDiffCoverage</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>
