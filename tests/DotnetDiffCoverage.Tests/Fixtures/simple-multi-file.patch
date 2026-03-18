@@ -1,0 +1,29 @@
+diff --git a/src/Calculator.cs b/src/Calculator.cs
+--- a/src/Calculator.cs
++++ b/src/Calculator.cs
+@@ -1,8 +1,12 @@
+ namespace MyApp;
+
+ public class Calculator
+ {
++    // Added a new multiply method
++    public int Multiply(int a, int b) => a * b;
++
+     public int Add(int a, int b)
+     {
+-        return a + b;
++        return a + b; // no change in logic
+     }
++
++    public int Subtract(int a, int b) => a - b;
+ }
+diff --git a/src/Program.cs b/src/Program.cs
+--- a/src/Program.cs
++++ b/src/Program.cs
+@@ -1,5 +1,7 @@
+ using MyApp;
+
+ var calc = new Calculator();
++var result = calc.Multiply(3, 4);
++Console.WriteLine(result);
+ Console.WriteLine(calc.Add(1, 2));

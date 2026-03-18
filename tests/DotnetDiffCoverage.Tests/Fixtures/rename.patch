@@ -1,0 +1,14 @@
+diff --git a/src/OldName.cs b/src/NewName.cs
+similarity index 60%
+rename from src/OldName.cs
+rename to src/NewName.cs
+--- a/src/OldName.cs
++++ b/src/NewName.cs
+@@ -1,4 +1,6 @@
+ namespace MyApp;
+
+ public class Widget
+ {
++    public string Name { get; set; } = "Widget";
++    public int Value { get; set; }
+ }

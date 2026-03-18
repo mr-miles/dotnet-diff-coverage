@@ -1,0 +1,13 @@
+diff --git a/assets/logo.png b/assets/logo.png
+index abc1234..def5678 100644
+Binary files a/assets/logo.png and b/assets/logo.png differ
+diff --git a/src/Helper.cs b/src/Helper.cs
+--- a/src/Helper.cs
++++ b/src/Helper.cs
+@@ -1,3 +1,5 @@
+ namespace MyApp;
+
+ public static class Helper
++{
++    public static string Greet() => "Hello";
++}
