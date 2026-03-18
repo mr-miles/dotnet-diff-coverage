@@ -53,6 +53,12 @@ public static class RootCommandBuilder
             name: "--config",
             description: "Path to a JSON or YAML config file. Defaults to dotnet-diff-coverage.json in the current directory.");
 
+        // --coverage-path-prefix: prefix to strip from coverage file paths so they match diff paths exactly
+        var coveragePathPrefixOption = new Option<string?>(
+            name: "--coverage-path-prefix",
+            description: "Prefix to strip from coverage file paths before matching against diff paths. " +
+                         "Use when coverage paths are absolute (e.g. /home/ci/repo/) and diff paths are relative (e.g. src/Foo.cs).");
+
         // --no-color: suppress ANSI color codes in console output
         var noColorOption = new Option<bool>(
             name: "--no-color",
@@ -61,6 +67,7 @@ public static class RootCommandBuilder
         rootCommand.AddOption(diffOption);
         rootCommand.AddOption(coverageOption);
         rootCommand.AddOption(coverageFormatOption);
+        rootCommand.AddOption(coveragePathPrefixOption);
         rootCommand.AddOption(outputJsonOption);
         rootCommand.AddOption(outputSarifOption);
         rootCommand.AddOption(thresholdOption);

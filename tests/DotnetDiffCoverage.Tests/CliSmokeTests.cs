@@ -18,6 +18,8 @@ public class CliSmokeTests
     [Theory]
     [InlineData("diff")]
     [InlineData("coverage")]
+    [InlineData("coverage-format")]
+    [InlineData("coverage-path-prefix")]
     [InlineData("output-json")]
     [InlineData("output-sarif")]
     [InlineData("threshold")]

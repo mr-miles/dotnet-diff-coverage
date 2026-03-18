@@ -1,3 +1,4 @@
+using DotnetDiffCoverage.Analysis;
 using DotnetDiffCoverage.Parsing;
 using DotnetDiffCoverage.Parsing.Formats;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,10 @@ public static class ServiceRegistration
         services.AddTransient<ICoverageFormatParser, LcovCoverageParser>();
         services.AddTransient<CoverageParser>();
 
-        // Cross-reference engine, output formatters, and API clients will be registered in later phases.
+        // Cross-reference engine
+        services.AddTransient<CrossReferenceEngine>();
+
+        // Output formatters and API clients will be registered in later phases.
         return services;
     }
 }

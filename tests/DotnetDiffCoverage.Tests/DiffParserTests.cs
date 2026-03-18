@@ -238,4 +238,44 @@ public class DiffParserTests
         var result = _parser.ParseFile(fixturePath);
         result.FileAddedLines.Should().BeEmpty();
     }
+
+    // ─── New file (--- /dev/null) ─────────────────────────────────────────────
+
+    [Fact]
+    public void Parse_NewFile_AdditionsAttributedToNewPath()
+    {
+        var diff = """
+            --- /dev/null
+            +++ b/src/NewFile.cs
+            @@ -0,0 +1,3 @@
+            +line1
+            +line2
+            +line3
+            """;
+
+        var result = _parser.Parse(diff);
+
+        result.FileAddedLines.Should().ContainKey("src/NewFile.cs");
+        result.FileAddedLines["src/NewFile.cs"].Should().BeEquivalentTo(new[] { 1, 2, 3 });
+    }
+
+    // ─── Deleted file (+++ /dev/null) — no additions ─────────────────────────
+
+    [Fact]
+    public void Parse_DeletedFile_ProducesNoEntry()
+    {
+        var diff = """
+            --- a/src/OldFile.cs
+            +++ /dev/null
+            @@ -1,3 +0,0 @@
+            -line1
+            -line2
+            -line3
+            """;
+
+        var result = _parser.Parse(diff);
+
+        result.FileAddedLines.Should().NotContainKey("src/OldFile.cs");
+        result.FileAddedLines.Should().BeEmpty();
+    }
 }
