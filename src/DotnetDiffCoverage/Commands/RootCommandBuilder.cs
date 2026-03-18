@@ -20,12 +20,17 @@ public static class RootCommandBuilder
         // --coverage: one or more coverage file paths (Cobertura, OpenCover, or LCOV)
         var coverageOption = new Option<FileInfo[]>(
             name: "--coverage",
-            description: "One or more coverage report files (Cobertura XML, OpenCover XML, or LCOV). Auto-detected format.")
+            description: "One or more coverage report files (Cobertura XML, OpenCover XML, or LCOV).")
         {
             AllowMultipleArgumentsPerToken = false,
             IsRequired = false,
         };
         coverageOption.Arity = ArgumentArity.OneOrMore;
+
+        // --coverage-format: specifies the coverage file format (cobertura, opencover, lcov)
+        var coverageFormatOption = new Option<string?>(
+            name: "--coverage-format",
+            description: "Coverage file format: cobertura, opencover, or lcov. Required when --coverage is provided.");
 
         // --output-json: write JSON report to this path (use '-' for stdout)
         var outputJsonOption = new Option<FileInfo?>(
@@ -55,6 +60,7 @@ public static class RootCommandBuilder
 
         rootCommand.AddOption(diffOption);
         rootCommand.AddOption(coverageOption);
+        rootCommand.AddOption(coverageFormatOption);
         rootCommand.AddOption(outputJsonOption);
         rootCommand.AddOption(outputSarifOption);
         rootCommand.AddOption(thresholdOption);

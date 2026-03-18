@@ -10,7 +10,13 @@ public static class ServiceRegistration
         // Diff parsing
         services.AddTransient<DiffParser>();
 
-        // Coverage parsers, formatters, and API clients will be registered here in later phases.
+        // Coverage parsing
+        services.AddTransient<CoberturaCoverageParser>();
+        services.AddTransient<OpenCoverCoverageParser>();
+        services.AddTransient<LcovCoverageParser>();
+        services.AddTransient<CoverageParser>();
+
+        // Cross-reference engine, output formatters, and API clients will be registered in later phases.
         return services;
     }
 }
