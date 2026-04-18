@@ -15,11 +15,6 @@ public sealed class JsonReporter
 
     public async Task WriteAsync(CrossReferenceResult result, Stream stream)
     {
-        if (result==null)
-        {
-            return;
-        }
-        
         var report = new
         {
             summary = new
