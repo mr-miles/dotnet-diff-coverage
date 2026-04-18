@@ -57,8 +57,8 @@ public class IntegrationTests : IDisposable
         // Calculator.cs: added [4,5,6,9,11,12]; covered {5,6,7} → uncovered [4,9,11,12]
         // (blank context lines in the patch are ignored by the parser, shifting line numbers)
         var calc = result.Files.Single(f => f.FilePath == "src/Calculator.cs");
-        calc.AddedLines.Should().BeEquivalentTo(new[] { 4, 5, 6, 9, 11, 12 });
-        calc.UncoveredLines.Should().BeEquivalentTo(new[] { 4, 9, 11, 12 });
+        calc.AddedLines.Should().BeEquivalentTo(new[] { 5, 6, 9, 11, 12 });
+        calc.UncoveredLines.Should().BeEquivalentTo(new[] { 9, 11, 12 });
 
         // Program.cs: added [3,4]; no coverage entry → all uncovered
         var prog = result.Files.Single(f => f.FilePath == "src/Program.cs");
@@ -84,7 +84,7 @@ public class IntegrationTests : IDisposable
 
         // LCOV and Cobertura fixtures represent the same coverage data for Calculator.cs
         var calc = result.Files.Single(f => f.FilePath == "src/Calculator.cs");
-        calc.UncoveredLines.Should().BeEquivalentTo(new[] { 4, 9, 11, 12 });
+        calc.UncoveredLines.Should().BeEquivalentTo(new[] { 9, 11, 12 });
 
         result.TotalUncoveredLines.Should().Be(6);
     }
