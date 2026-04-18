@@ -35,7 +35,7 @@ public sealed class SarifReporter
                         {
                             artifactLocation = new
                             {
-                                uri = f.FilePath.Replace('\', '/'),
+                                uri = f.FilePath.Replace('\\', '/'),
                                 uriBaseId = "%SRCROOT%",
                             },
                             region = new { startLine = line },
@@ -82,3 +82,4 @@ public sealed class SarifReporter
         await JsonSerializer.SerializeAsync(stream, sarif, Options);
     }
 }
+
