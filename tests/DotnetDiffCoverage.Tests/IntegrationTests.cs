@@ -64,10 +64,10 @@ public class IntegrationTests : IDisposable
         var prog = result.Files.Single(f => f.FilePath == "src/Program.cs");
         prog.UncoveredLines.Should().BeEquivalentTo(new[] { 3, 4 });
 
-        // Aggregate: 7 added, 6 uncovered → ~86 %
+        // Aggregate: 7 added, 5 uncovered → ~71.4 %
         result.TotalAddedLines.Should().Be(7);
-        result.TotalUncoveredLines.Should().Be(6);
-        result.UncoveredPercent.Should().BeApproximately(75.0, 0.01);
+        result.TotalUncoveredLines.Should().Be(5);
+        result.UncoveredPercent.Should().BeApproximately(71.43, 0.01);
     }
 
     // ─── 2. Fixture-based: same patch file + LCOV fixture ────────────────────
@@ -86,7 +86,7 @@ public class IntegrationTests : IDisposable
         var calc = result.Files.Single(f => f.FilePath == "src/Calculator.cs");
         calc.UncoveredLines.Should().BeEquivalentTo(new[] { 9, 11, 12 });
 
-        result.TotalUncoveredLines.Should().Be(6);
+        result.TotalUncoveredLines.Should().Be(5);
     }
 
     // ─── 3. New service method added, developer forgot to write tests ─────────
