@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DotnetDiffCoverage.Analysis;
@@ -19,6 +18,13 @@ public sealed class SarifReporter
     private static readonly string ToolVersion =
         typeof(SarifReporter).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion.Split('+')[0] ?? "0.0.0";
+
+    // Anonymous types cannot carry attributes, so we use a record for the top-level
+    // SARIF object in order to emit the "$schema" key via [JsonPropertyName].
+    private sealed record SarifRoot(
+        string Version,
+        [property: JsonPropertyName("$schema")] string Schema,
+        object[] Runs);
 
     public async Task WriteAsync(CrossReferenceResult result, Stream stream)
     {
@@ -46,11 +52,10 @@ public sealed class SarifReporter
             }))
             .ToList();
 
-        var sarif = new
-        {
-            version = "2.1.0",
-            schema = "https://json.schemastore.org/sarif-2.1.0.json",
-            runs = new[]
+        var sarif = new SarifRoot(
+            Version: "2.1.0",
+            Schema: "https://json.schemastore.org/sarif-2.1.0.json",
+            Runs: new[]
             {
                 new
                 {
@@ -77,13 +82,9 @@ public sealed class SarifReporter
                     },
                     results,
                 },
-            },
-        };
+            }
+        );
 
-        // $schema cannot be expressed as a C# identifier, so we patch it after serialisation.
-        var json = JsonSerializer.Serialize(sarif, Options)
-            .Replace("\"schema\":", "\"$schema\":");
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(json));
+        await JsonSerializer.SerializeAsync(stream, sarif, Options);
     }
 }
-
