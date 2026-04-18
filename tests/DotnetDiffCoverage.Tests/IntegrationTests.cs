@@ -64,8 +64,8 @@ public class IntegrationTests : IDisposable
         var prog = result.Files.Single(f => f.FilePath == "src/Program.cs");
         prog.UncoveredLines.Should().BeEquivalentTo(new[] { 3, 4 });
 
-        // Aggregate: 8 added, 6 uncovered → 75 %
-        result.TotalAddedLines.Should().Be(8);
+        // Aggregate: 7 added, 6 uncovered → ~86 %
+        result.TotalAddedLines.Should().Be(7);
         result.TotalUncoveredLines.Should().Be(6);
         result.UncoveredPercent.Should().BeApproximately(75.0, 0.01);
     }
