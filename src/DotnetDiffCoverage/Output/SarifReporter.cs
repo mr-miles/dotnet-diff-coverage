@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DotnetDiffCoverage.Analysis;
@@ -59,7 +60,7 @@ public sealed class SarifReporter
                         {
                             name = "dotnet-diff-coverage",
                             version = ToolVersion,
-                            informationUri = "https://github.com/mr-miles/tool",
+                            informationUri = "https://github.com/mr-miles/dotnet-diff-coverage",
                             rules = new[]
                             {
                                 new
@@ -68,7 +69,7 @@ public sealed class SarifReporter
                                     name = "UncoveredAddedLine",
                                     shortDescription = new { text = "Added line not covered by tests" },
                                     fullDescription = new { text = "A line was added in this diff but is not covered by any test in the provided coverage reports." },
-                                    helpUri = "https://github.com/mr-miles/tool#dc001",
+                                    helpUri = "https://github.com/mr-miles/dotnet-diff-coverage#dc001",
                                     defaultConfiguration = new { level = "warning" },
                                 },
                             },
@@ -79,7 +80,10 @@ public sealed class SarifReporter
             },
         };
 
-        await JsonSerializer.SerializeAsync(stream, sarif, Options);
+        // $schema cannot be expressed as a C# identifier, so we patch it after serialisation.
+        var json = JsonSerializer.Serialize(sarif, Options)
+            .Replace("\"schema\":", "\"$schema\":");
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(json));
     }
 }
 
