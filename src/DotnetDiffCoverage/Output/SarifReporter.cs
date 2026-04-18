@@ -19,33 +19,15 @@ public sealed class SarifReporter
         typeof(SarifReporter).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion.Split('+')[0] ?? "0.0.0";
 
-    // Anonymous types cannot carry attributes, so we use a record for the top-level
-    // SARIF object in order to emit the "$schema" key via [JsonPropertyName].
     private sealed record SarifRoot(
         string Version,
         [property: JsonPropertyName("$schema")] string Schema,
         object[] Runs);
 
-    /// <summary>Groups a sorted sequence of line numbers into contiguous ranges.</summary>
-    private static IEnumerable<(int Start, int End)> ToRanges(IEnumerable<int> lines)
-    {
-        int? start = null, prev = null;
-        foreach (var line in lines.OrderBy(x => x))
-        {
-            if (prev == null || line != prev + 1)
-            {
-                if (start != null) yield return (start.Value, prev!.Value);
-                start = line;
-            }
-            prev = line;
-        }
-        if (start != null) yield return (start.Value, prev!.Value);
-    }
-
     public async Task WriteAsync(CrossReferenceResult result, Stream stream)
     {
         var results = result.Files
-            .SelectMany(f => ToRanges(f.UncoveredLines).Select(range => new
+            .SelectMany(f => f.UncoveredRanges.Select(range => new
             {
                 ruleId = "DC001",
                 level = "warning",
