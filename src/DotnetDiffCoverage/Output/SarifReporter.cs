@@ -26,14 +26,35 @@ public sealed class SarifReporter
         [property: JsonPropertyName("$schema")] string Schema,
         object[] Runs);
 
+    /// <summary>Groups a sorted sequence of line numbers into contiguous ranges.</summary>
+    private static IEnumerable<(int Start, int End)> ToRanges(IEnumerable<int> lines)
+    {
+        int? start = null, prev = null;
+        foreach (var line in lines.OrderBy(x => x))
+        {
+            if (prev == null || line != prev + 1)
+            {
+                if (start != null) yield return (start.Value, prev!.Value);
+                start = line;
+            }
+            prev = line;
+        }
+        if (start != null) yield return (start.Value, prev!.Value);
+    }
+
     public async Task WriteAsync(CrossReferenceResult result, Stream stream)
     {
         var results = result.Files
-            .SelectMany(f => f.UncoveredLines.Select(line => new
+            .SelectMany(f => ToRanges(f.UncoveredLines).Select(range => new
             {
                 ruleId = "DC001",
                 level = "warning",
-                message = new { text = $"Line {line} was added but is not covered by any test." },
+                message = new
+                {
+                    text = range.Start == range.End
+                        ? $"Line {range.Start} was added but is not covered by any test."
+                        : $"Lines {range.Start}\u2013{range.End} were added but are not covered by any test.",
+                },
                 locations = new[]
                 {
                     new
@@ -45,7 +66,7 @@ public sealed class SarifReporter
                                 uri = f.FilePath.Replace('\\', '/'),
                                 uriBaseId = "%SRCROOT%",
                             },
-                            region = new { startLine = line },
+                            region = new { startLine = range.Start, endLine = range.End },
                         },
                     },
                 },
