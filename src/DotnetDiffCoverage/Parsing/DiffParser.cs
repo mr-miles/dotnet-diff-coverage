@@ -18,6 +18,7 @@ public sealed class DiffParser
         if (string.IsNullOrWhiteSpace(diffText))
             return DiffResult.Empty;
 
+        // adding a comment
         var files = new Dictionary<string, DiffFile>(StringComparer.OrdinalIgnoreCase);
         DiffFile? currentFile = null;
         bool isBinary = false;
