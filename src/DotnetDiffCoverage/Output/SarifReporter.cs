@@ -19,8 +19,6 @@ public sealed class SarifReporter
         typeof(SarifReporter).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion.Split('+')[0] ?? "0.0.0";
 
-    // Anonymous types cannot carry attributes, so we use a record for the top-level
-    // SARIF object in order to emit the "$schema" key via [JsonPropertyName].
     private sealed record SarifRoot(
         string Version,
         [property: JsonPropertyName("$schema")] string Schema,
@@ -29,11 +27,16 @@ public sealed class SarifReporter
     public async Task WriteAsync(CrossReferenceResult result, Stream stream)
     {
         var results = result.Files
-            .SelectMany(f => f.UncoveredLines.Select(line => new
+            .SelectMany(f => f.UncoveredRanges.Select(range => new
             {
                 ruleId = "DC001",
                 level = "warning",
-                message = new { text = $"Line {line} was added but is not covered by any test." },
+                message = new
+                {
+                    text = range.Start == range.End
+                        ? $"Line {range.Start} was added but is not covered by any test."
+                        : $"Lines {range.Start}\u2013{range.End} were added but are not covered by any test.",
+                },
                 locations = new[]
                 {
                     new
@@ -45,7 +48,7 @@ public sealed class SarifReporter
                                 uri = f.FilePath.Replace('\\', '/'),
                                 uriBaseId = "%SRCROOT%",
                             },
-                            region = new { startLine = line },
+                            region = new { startLine = range.Start, endLine = range.End },
                         },
                     },
                 },

@@ -1,4 +1,5 @@
 using DotnetDiffCoverage.Analysis;
+using DotnetDiffCoverage.Models;
 using DotnetDiffCoverage.Parsing;
 using FluentAssertions;
 using Xunit;
@@ -14,8 +15,26 @@ public class CrossReferenceEngineTests
     private static DiffResult MakeDiff(params (string path, int[] lines)[] entries) =>
         new(entries.ToDictionary(
             e => e.path,
-            e => (IReadOnlyList<int>)e.lines.ToList(),
+            e => (IReadOnlyList<LineRange>)LinesToRanges(e.lines),
             StringComparer.OrdinalIgnoreCase));
+
+    private static List<LineRange> LinesToRanges(int[] lines)
+    {
+        var sorted = lines.OrderBy(l => l).ToList();
+        var ranges = new List<LineRange>();
+        int? start = null, prev = null;
+        foreach (var l in sorted)
+        {
+            if (prev == null || l != prev + 1)
+            {
+                if (start != null) ranges.Add(new LineRange(start.Value, prev!.Value));
+                start = l;
+            }
+            prev = l;
+        }
+        if (start != null) ranges.Add(new LineRange(start.Value, prev!.Value));
+        return ranges;
+    }
 
     private static CoverageResult MakeCoverage(params (string path, int[] lines)[] entries) =>
         new(entries.ToDictionary(
@@ -49,6 +68,7 @@ public class CrossReferenceEngineTests
         result.Files.Should().ContainSingle();
         var file = result.Files[0];
         file.UncoveredLines.Should().BeEmpty();
+        file.UncoveredRanges.Should().BeEmpty();
         result.TotalUncoveredLines.Should().Be(0);
         result.UncoveredPercent.Should().Be(0.0);
     }
@@ -65,6 +85,8 @@ public class CrossReferenceEngineTests
 
         result.Files.Should().ContainSingle();
         result.Files[0].UncoveredLines.Should().BeEquivalentTo(new[] { 10, 11, 12 });
+        result.Files[0].UncoveredRanges.Should().ContainSingle()
+            .Which.Should().Be(new LineRange(10, 12));
         result.TotalUncoveredLines.Should().Be(3);
     }
 
@@ -81,6 +103,8 @@ public class CrossReferenceEngineTests
         result.Files.Should().ContainSingle();
         result.Files[0].UncoveredLines.Should().ContainSingle()
             .Which.Should().Be(11);
+        result.Files[0].UncoveredRanges.Should().ContainSingle()
+            .Which.Should().Be(new LineRange(11, 11));
     }
 
     // ─── 5. --coverage-path-prefix strips absolute prefix for exact match ────────
@@ -104,7 +128,6 @@ public class CrossReferenceEngineTests
         var diff = MakeDiff(("src/Foo.cs", [1]));
         var coverage = MakeCoverage(("/home/ci/repo/src/Foo.cs", [1]));
 
-        // Prefix without trailing slash — engine normalizes it
         var result = _engine.Analyze(diff, coverage, coveragePathPrefix: "/home/ci/repo");
 
         result.Files.Should().ContainSingle();
@@ -114,8 +137,6 @@ public class CrossReferenceEngineTests
     [Fact]
     public void Analyze_WithoutCoveragePathPrefix_AbsoluteCoveragePathDoesNotMatch()
     {
-        // Without a prefix, absolute coverage paths do NOT auto-match relative diff paths.
-        // Users must supply --coverage-path-prefix to bridge the gap.
         var diff = MakeDiff(("src/Foo.cs", [5, 6]));
         var coverage = MakeCoverage(("C:/repo/src/Foo.cs", [5, 6]));
 
@@ -166,9 +187,6 @@ public class CrossReferenceEngineTests
     [Fact]
     public void Analyze_AggregateStats_AreCalculatedCorrectly()
     {
-        // A.cs: 3 added, 2 covered → 1 uncovered
-        // B.cs: 2 added, 0 covered (absent) → 2 uncovered
-        // Total: 5 added, 3 uncovered → 60%
         var diff = MakeDiff(
             ("src/A.cs", [1, 2, 3]),
             ("src/B.cs", [10, 11]));
@@ -210,8 +228,39 @@ public class CrossReferenceEngineTests
         var result = _engine.Analyze(diff, coverage);
 
         result.Files.Should().ContainSingle();
-        // Line 5 is covered, line 6 is not
         result.Files[0].UncoveredLines.Should().ContainSingle()
             .Which.Should().Be(6);
+    }
+
+    // ─── 11. UncoveredRanges groups non-contiguous uncovered lines ────────────
+
+    [Fact]
+    public void Analyze_NonContiguousUncoveredLines_GroupedIntoSeparateRanges()
+    {
+        // Added: 10,11,12,13,14 — covered: 11,13 — uncovered: 10,12,14 (non-contiguous)
+        var diff = MakeDiff(("src/Foo.cs", [10, 11, 12, 13, 14]));
+        var coverage = MakeCoverage(("src/Foo.cs", [11, 13]));
+
+        var result = _engine.Analyze(diff, coverage);
+
+        result.Files[0].UncoveredRanges.Should().HaveCount(3);
+        result.Files[0].UncoveredRanges.Should().Contain(new LineRange(10, 10));
+        result.Files[0].UncoveredRanges.Should().Contain(new LineRange(12, 12));
+        result.Files[0].UncoveredRanges.Should().Contain(new LineRange(14, 14));
+    }
+
+    // ─── 12. UncoveredRanges merges contiguous uncovered lines ───────────────
+
+    [Fact]
+    public void Analyze_ContiguousUncoveredLines_MergedIntoSingleRange()
+    {
+        // Added: 10,11,12 — covered: none — uncovered: 10-12 as single range
+        var diff = MakeDiff(("src/Foo.cs", [10, 11, 12]));
+        var coverage = MakeCoverage(("src/Foo.cs", []));
+
+        var result = _engine.Analyze(diff, coverage);
+
+        result.Files[0].UncoveredRanges.Should().ContainSingle()
+            .Which.Should().Be(new LineRange(10, 12));
     }
 }
