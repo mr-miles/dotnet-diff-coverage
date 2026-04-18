@@ -29,6 +29,9 @@ public sealed class JsonReporter
                 {
                     path = f.FilePath,
                     uncoveredLines = f.UncoveredLines,
+                    uncoveredRanges = f.UncoveredRanges
+                        .Select(r => new { start = r.Start, end = r.End })
+                        .ToList(),
                 }),
         };
         await JsonSerializer.SerializeAsync(stream, report, Options);
