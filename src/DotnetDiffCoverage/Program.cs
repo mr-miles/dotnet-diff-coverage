@@ -17,6 +17,6 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
-// Build the CLI root command and invoke it.
-var rootCommand = RootCommandBuilder.Build();
+// Build the CLI root command (host is passed so the handler can resolve services).
+var rootCommand = RootCommandBuilder.Build(host);
 return await rootCommand.InvokeAsync(args);
