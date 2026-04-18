@@ -25,7 +25,5 @@
     "**/*.targets",
     "**/*.config"
   ],
-  "threshold": 0,
-  "coverageFormat": "cobertura",
-  "coveragePathPrefix": ""
+  "threshold": 0
 }
